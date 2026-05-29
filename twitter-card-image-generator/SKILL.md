@@ -1,6 +1,8 @@
 ---
 name: twitter-card-image-generator
 description: Generate Twitter Card (X) link preview images with correct 2:1 aspect ratio and platform-specific constraints. Use when the user mentions "Twitter Card image," "twitter:image," "X preview image," "tweet preview image," "summary_large_image," "Twitter OG image," "X card image," "twitter card image generator," or "generate twitter card image." Covers six generation approaches (AI Image Gen, Agent-Native, Satori+resvg, Puppeteer, managed services, JSON config) adapted for Twitter's 1200x675px dimensions and timeline rendering quirks. For generic OG image generation (1200x630, 1.91:1), use og-image-generator.
+license: MIT
+compatibility: Requires Node.js for Satori/resvg templates. Shares og-image-generator infrastructure; install both for full OG + Twitter pipeline. AI generation requires external image API access.
 metadata:
   version: 2.0.0
 ---
@@ -10,6 +12,20 @@ metadata:
 Generate images optimized for X (Twitter) link previews — the cards that appear in the timeline when someone shares a link. Twitter Cards have distinct image dimensions and rendering behavior that differ from standard Open Graph. This skill covers the complete generation pipeline adapted for Twitter's 2:1 aspect ratio and platform-specific quirks.
 
 All six generation approaches and all six visual styles from **og-image-generator** apply here. The only differences are: output dimensions (1200x675 instead of 1200x630), X-specific design adaptations, timeline-safe zoning, and player card support.
+
+## When to Use
+
+- User needs **1200×675px (2:1)** images for X/Twitter link previews, `summary_large_image`, or player card posters
+- User mentions `twitter:image`, Twitter Card, X preview image, tweet preview, or timeline card design
+- User needs dark-mode-safe layouts, upper-60% content zones, or 20px edge masks for X's rounded-corner crop
+- User already uses **og-image-generator** and wants the Twitter-adapted variant of the same styles and pipeline
+
+## When NOT to Use
+
+- **Generic OG images (1200×630, 1.91:1)** for Facebook, LinkedIn, Slack, etc. — use **og-image-generator** instead
+- **Only setting HTML meta tags** (not creating the image file) — use **twitter-cards** from marketing-skills
+- **SVG output** — Twitter does not support SVG for card images; use PNG or JPG
+- **No-code visual editor or hosted API** — use [Oginify](https://oginify.com) instead of running an agent pipeline
 
 **When invoking**: On **first use**, open with 1–2 sentences on what this skill covers and why it matters, then provide the main output. On **subsequent use** or when the user asks to skip, go directly to the main output.
 

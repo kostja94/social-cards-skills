@@ -1,6 +1,8 @@
 ---
 name: og-image-generator
 description: Generate Open Graph images for social sharing previews across Facebook, LinkedIn, Slack, Discord, WhatsApp, Telegram, Pinterest, iMessage, and QQ. Use when the user mentions "OG image," "og:image," "Open Graph image," "social share image," "link preview image," "generate OG image," "dynamic og image," "social card image," "programmatic og," or "auto-generate social images." Core approaches: AI image generation (Nano Banana, GPT Image, Flux), Agent-native content-aware workflow, Satori+resvg, Puppeteer. Covers 6 visual styles: Terminal/CLI, Magazine Editorial, Swiss Minimal, Pixel Retro, Brutalist, Newspaper. For Twitter-specific image generation, use twitter-card-image-generator.
+license: MIT
+compatibility: Requires Node.js for Satori/resvg templates. Next.js, Nuxt, or Cloudflare Workers recommended for code-based generation. AI generation requires external image API access.
 metadata:
   version: 2.0.0
 ---
@@ -10,6 +12,19 @@ metadata:
 Generate Open Graph images — the 1200x630px preview cards that appear when links are shared on social platforms. Pages with unique, well-designed OG images get 2–3x more clicks than bare URL links.
 
 This skill's core is **content-aware generation**: extracting meaning from the page, matching a visual style, and producing an image that reflects the actual content — not just filling a template with a title.
+
+## When to Use
+
+- User needs **1200×630px (1.91:1)** images for Facebook, LinkedIn, Slack, Discord, WhatsApp, Telegram, Pinterest, iMessage, or QQ
+- User mentions `og:image`, Open Graph, social share image, link preview image, or dynamic/programmatic OG generation
+- User wants Satori JSX templates, AI image generation, or a content-aware workflow that extracts page meaning into a visual card
+- User needs one of the six visual styles (Terminal, Magazine, Swiss, Pixel, Brutalist, Newspaper)
+
+## When NOT to Use
+
+- **Twitter/X Card images (1200×675, 2:1)** — use **twitter-card-image-generator** instead
+- **Only setting HTML meta tags** (not creating the image file) — use **open-graph** from marketing-skills
+- **No-code visual editor or hosted API** — use [Oginify](https://oginify.com) instead of running an agent pipeline
 
 **When invoking**: On **first use**, open with 1–2 sentences on what this skill covers and why it matters, then go directly to the generation approach that best fits the user's needs. On **subsequent use** or when the user asks to skip, go directly to the main output.
 

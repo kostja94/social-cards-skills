@@ -1,8 +1,8 @@
 # Social Card Images for AI Agents
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/kostja94/social-cards-skill)](https://github.com/kostja94/social-cards-skill/stargazers)
-[![Last commit](https://img.shields.io/github/last-commit/kostja94/social-cards-skill)](https://github.com/kostja94/social-cards-skill/commits/main)
+[![GitHub stars](https://img.shields.io/github/stars/kostja94/social-cards-skills)](https://github.com/kostja94/social-cards-skills/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/kostja94/social-cards-skills)](https://github.com/kostja94/social-cards-skills/commits/main)
 
 Programmatic social share image generation for AI agents — OG images (1200×630px, 1.91:1) and Twitter/X Card images (1200×675px, 2:1). 6 visual styles (Terminal, Magazine, Swiss, Pixel, Brutalist, Newspaper), Satori+resvg rendering, AI image generation pipeline, and Agent-Native content-aware workflow. Works with Cursor, Claude Code, and any Agent Skills-compatible platform.
 
@@ -22,14 +22,14 @@ Prefer a no-code solution over running agents yourself? **[Oginify](https://ogin
 
 ```bash
 # Install both skills (og-image-generator + twitter-card-image-generator)
-npx skills add kostja94/social-cards-skill
+npx skills add kostja94/social-cards-skills
 
 # Install selectively
-npx skills add kostja94/social-cards-skill --skill og-image-generator
-npx skills add kostja94/social-cards-skill --skill twitter-card-image-generator
+npx skills add kostja94/social-cards-skills --skill og-image-generator
+npx skills add kostja94/social-cards-skills --skill twitter-card-image-generator
 
 # List available
-npx skills add kostja94/social-cards-skill --list
+npx skills add kostja94/social-cards-skills --list
 ```
 
 **Platforms**: Cursor, Claude Code, OpenClaw, Lovable — native or copy to `.cursor/skills/`, `.claude/skills/`, or `.agents/skills/`.
