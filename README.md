@@ -4,7 +4,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/kostja94/social-cards-skills)](https://github.com/kostja94/social-cards-skills/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/kostja94/social-cards-skills)](https://github.com/kostja94/social-cards-skills/commits/main)
 
-Programmatic social share image generation for AI agents — OG images (1200×630px, 1.91:1) and Twitter/X Card images (1200×675px, 2:1). 6 visual styles (Terminal, Magazine, Swiss, Pixel, Brutalist, Newspaper), Satori+resvg rendering, AI image generation pipeline, and Agent-Native content-aware workflow. Works with Cursor, Claude Code, and any Agent Skills-compatible platform.
+Programmatic social share image generation for AI agents — OG images (1200×630px, 1.91:1) and Twitter/X Card images (1200×675px, 2:1). **16 visual styles** across dual pipelines (Satori layout + AI/Hybrid texture), Agent-Native v3 content-aware workflow with page priority (S/A/B/C), 100+ page type classification, and 35 site type profiles. Works with Cursor, Claude Code, and any Agent Skills-compatible platform.
 
 **Created by [Kostja](https://github.com/kostja94)** · Founder of [Alignify](https://alignify.co) · zyjstc@gmail.com
 
@@ -45,48 +45,65 @@ npx skills add kostja94/social-cards-skills --list
 | **og-image-generator** | 1200×630px (1.91:1) | Facebook, LinkedIn, Slack, Discord, WhatsApp, Telegram, Pinterest, iMessage, QQ |
 | **twitter-card-image-generator** | 1200×675px (2:1) | X/Twitter link previews, `summary_large_image` cards, player card posters |
 
-Both skills share the same 6 visual styles, reference documentation, and Satori seed templates — differ only in canvas dimensions and platform-specific adaptations (dark mode, timeline-safe zones, edge masks for X).
+Both skills share the same 16 visual styles, reference documentation, and templates — differ only in canvas dimensions and platform-specific adaptations.
 
 ---
 
-## 6 Visual Styles
+## 16 Visual Styles + Dual Pipeline
 
-Every style ships with a Satori JSX seed template, color presets, and anti-pattern documentation. Pick by the feeling you want, not by topic.
+Every style ships with a seed template (Satori JSX and/or AI prompt + hybrid overlay), color presets, and anti-patterns.
 
-| # | Style | Tone | Signature look |
-|---|-------|------|----------------|
-| 1 | **Terminal / CLI** | Technical, hacker, dev-tool | `$>` prompts, monospace, green-on-black, scanlines |
-| 2 | **Magazine Editorial** | Slow, considered, narrative | Serif display, paper tones, large photo well, pull quotes |
-| 3 | **Swiss Minimal** | Engineered, quantified, decisive | Inter light display, single accent, hairline rules, left grid |
-| 4 | **Pixel Retro** | Playful, nostalgic, indie | Pixel fonts (Press Start 2P), 8-bit palette, chunky borders |
-| 5 | **Brutalist** | Raw, anti-convention, bold | B&W, max-bold type, no rounded corners, asymmetric blocks |
-| 6 | **Newspaper** | Authoritative, timely, dense | Multi-column, serif titles, uppercase labels, dateline |
+### Layout-Type (Satori Pipeline — zero cost, instant, text-perfect)
 
-**Style selection guide**:
+| # | Style | Tone | Signature |
+|---|-------|------|-----------|
+| 1 | **Terminal / CLI** | Technical, hacker | `$>` prompts, monospace, green-on-black |
+| 2 | **Magazine Editorial** | Narrative, considered | Serif display, paper tones, pull quotes |
+| 3 | **Swiss Minimal** | Engineered, data-driven | Inter light, single accent, left grid |
+| 4 | **Pixel Retro** | Playful, nostalgic | Press Start 2P, 8-bit palette, HUD |
+| 5 | **Brutalist** | Raw, anti-convention | B&W only, max-bold, zero radius |
+| 6 | **Newspaper** | Authoritative, dense | Multi-column, serif titles, dateline |
+| 7 | **Neo-Brutalism** | Loud, clashing | High-sat colors, 6px borders, hard shadows |
+| 8 | **Bento Grid** | Modular, structured | Asymmetric cards, dark glow, 14px radius |
+| 9 | **Neo-Swiss Gradient** | Refined, warm | Warm gradient, Inter 200, hairline rules |
+| 10 | **Dark Gradient+Texture** | Atmospheric, technical | Radial glow, dot-grid, glowing line |
 
-| Content tone | Recommended style |
-|--------------|-------------------|
-| Technical, data-rich, comparison | Swiss Minimal or Terminal/CLI |
-| Narrative, brand story, long-form | Magazine Editorial |
-| Dev tool, CLI, API docs | Terminal/CLI |
-| Game, retro, community | Pixel Retro |
-| Design-forward, anti-convention | Brutalist |
-| News, aggregation, time-sensitive | Newspaper |
+### Texture-Type (AI/Hybrid Pipeline — visual richness, hybrid text accuracy)
+
+| # | Style | Tone | Signature |
+|---|-------|------|-----------|
+| 11 | **Text Overlay** | Photographic, immersive | Photo bg + dark mask + bold white title |
+| 12 | **Cinematic** | Emotional, premium | Film grading, bokeh, grain, lower-third title |
+| 13 | **Collage** | Handmade, creative | Torn edges, tape, polaroids, layered panels |
+| 14 | **Risograph** | Artisanal, indie | 2-3 colors, halftone dots, ink offset |
+| 15 | **Vaporwave** | Retro-futurist, ironic | Neon sunset, statues, CRT scanlines, glitch |
+| 16 | **Grunge** | Raw, distressed | Noise grain, photocopy texture, faded B&W |
+
+### AI-Native Styles (#17-20 — Pure AI, zero Satori)
+
+| # | Style | Tone | Signature |
+|---|-------|------|-----------|
+| 17 | **AI Painterly** | Artistic, handcrafted | Watercolor/oil/ink — title is painted into the artwork |
+| 18 | **Abstract Gradient** | Pure visual, meditative | Zero text. Fluid color fields. Rothko-esque |
+| 19 | **AI Sticker/Badge** | Punchy, pop, modern | 1-3 word badge, 3D depth, atmospheric bg |
+| 20 | **AI Infographic** | Data-driven, editorial | Visual comparisons, big numbers, data art |
+
+**Pipeline**: Satori (#1-10) for layout-driven styles. AI-Native (#11-20) for texture/visual-driven styles — one prompt, one image, modern models handle text reliably. Hybrid (AI bg + Satori text) available as fallback for zero-tolerance text accuracy. See [pipeline-guide](og-image-generator/references/pipeline-guide.md).
 
 ---
 
 ## Generation Approaches
 
-Each skill covers 6 fundamentally different ways to produce a social card image:
+Each skill covers 6 fundamentally different ways to produce a social card image, plus a dual-pipeline decision system (Satori vs AI vs Hybrid):
 
 | # | Approach | Best for |
 |---|----------|----------|
 | 1 | **AI Image Generation** | Visual-first pages; hybrid strategy (AI background + Satori text overlay) for pixel-perfect typography |
-| 2 | **Agent-Native Content-Aware Workflow** | Extracts meaning from page content, matches style, picks generation method automatically |
-| 3 | **Satori + resvg** | Code-based, text-precise, Edge-compatible (Next.js, Cloudflare Workers) |
-| 4 | **Puppeteer / Playwright** | Complex CSS Grid layouts, Canvas charts, WebGL backgrounds |
-| 5 | **Managed Services** | OG Kit, Cloudinary, Vercel OG, imgix — no rendering pipeline to maintain |
-| 6 | **JSON Config** | Declarative config in CMS, non-developer maintainable |
+| 2 | **Agent-Native v3 Workflow** | Classifies page (100+ types), determines priority (S/A/B/C), matches style via 3D matrix, selects pipeline |
+| 3 | **Satori + resvg** | Code-based, text-precise, Edge-compatible — for all layout styles (#1-10) |
+| 4 | **Hybrid Pipeline** | AI generates background/texture → Satori overlays pixel-perfect text — for texture styles (#11-16) |
+| 5 | **Puppeteer / Playwright** | Complex CSS Grid layouts, Canvas charts, WebGL backgrounds |
+| 6 | **Managed Services / JSON Config** | OG Kit, Cloudinary, Vercel OG, imgix; or declarative JSON config |
 
 **AI tools compared**: GPT Image 2.0, Flux (Black Forest Labs), Nano Banana, DALL-E 3, Midjourney — with text accuracy, aesthetic quality, speed, and Chinese text support benchmarks.
 
@@ -98,12 +115,12 @@ Production-ready seed templates included:
 
 | Template | Framework | Styles |
 |----------|-----------|--------|
-| `og-image-generator/templates/nextjs-route.tsx` | Next.js App Router | All 6 — OgSwitchboard dispatches via `?style=` query param |
-| `og-image-generator/templates/nuxt.vue` | Nuxt 3 (nuxt-og-image) | Swiss Minimal example; all 6 adaptable |
-| `og-image-generator/templates/nodejs-generic.ts` | Generic Node.js (batch) | Swiss Minimal plain-object format; all 6 adaptable |
-| `twitter-card-image-generator/templates/twitter-nextjs-route.tsx` | Next.js App Router | All 6 — Twitter-adapted with dark mode defaults, 20px edge mask, upper-60% content zone |
+| `og-image-generator/templates/nextjs-route.tsx` | Next.js App Router | All 16 — OgSwitchboard dispatches via `?style=` query param |
+| `og-image-generator/templates/nuxt.vue` | Nuxt 3 (nuxt-og-image) | Swiss Minimal example; all 16 adaptable |
+| `og-image-generator/templates/nodejs-generic.ts` | Generic Node.js (batch) | Swiss Minimal plain-object format; all 16 adaptable |
+| `twitter-card-image-generator/templates/twitter-nextjs-route.tsx` | Next.js App Router | All 16 — Twitter-adapted with dark mode defaults, 20px edge mask, upper-60% content zone |
 
-Each style also has a standalone Satori JSX seed template in `og-image-generator/templates/{style}.tsx` for copying into any project.
+Each style has a standalone seed template in `og-image-generator/templates/{style}.tsx` — Satori JSX for layout styles (#1-10) and AI prompt + Satori text overlay for texture styles (#11-16).
 
 ---
 
@@ -119,8 +136,11 @@ These are optional — this repo works standalone. Install them for the full soc
 
 | Doc | Purpose |
 |-----|---------|
+| [content-strategy](og-image-generator/references/content-strategy.md) | 100+ page types S/A/B/C, 35 site types, priority decision framework |
+| [style-system-v3](og-image-generator/references/style-system-v3.md) | Full 20-style design system, pipeline compatibility, style×page-type and style×site-type matrices |
+| [pipeline-guide](og-image-generator/references/pipeline-guide.md) | Dual pipeline decision tree, Satori vs AI vs Hybrid, prompt templates |
+| [style-system](og-image-generator/references/style-system.md) | Original 6-style design system (legacy, retained for reference) |
 | [typography](og-image-generator/references/typography.md) | Type scale, font pairing formulas, CJK rules |
-| [style-system](og-image-generator/references/style-system.md) | Full design system — color presets, layout recipes, anti-patterns per style |
 | [font-loading](og-image-generator/references/font-loading.md) | Satori font strategies, CJK subsetting, edge runtime limits |
 | [satori-constraints](og-image-generator/references/satori-constraints.md) | Satori CSS subset — unsupported properties, workarounds |
 | [twitter-specific](twitter-card-image-generator/references/twitter-specific.md) | X platform design adaptations, dark mode, timeline crops |

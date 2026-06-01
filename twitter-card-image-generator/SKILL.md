@@ -1,10 +1,10 @@
 ---
 name: twitter-card-image-generator
-description: Generate Twitter Card (X) link preview images with correct 2:1 aspect ratio and platform-specific constraints. Use when the user mentions "Twitter Card image," "twitter:image," "X preview image," "tweet preview image," "summary_large_image," "Twitter OG image," "X card image," "twitter card image generator," or "generate twitter card image." Covers six generation approaches (AI Image Gen, Agent-Native, Satori+resvg, Puppeteer, managed services, JSON config) adapted for Twitter's 1200x675px dimensions and timeline rendering quirks. For generic OG image generation (1200x630, 1.91:1), use og-image-generator.
+description: Generate Twitter Card (X) link preview images with correct 2:1 aspect ratio and platform-specific constraints. Use when the user mentions "Twitter Card image," "twitter:image," "X preview image," "tweet preview image," "summary_large_image," "Twitter OG image," "X card image," "twitter card image generator," or "generate twitter card image." Covers six generation approaches + dual pipeline (Satori/Hybrid) adapted for Twitter's 1200x675px dimensions and timeline rendering quirks. Shares 16 visual styles with og-image-generator. For generic OG image generation (1200x630, 1.91:1), use og-image-generator.
 license: MIT
 compatibility: Requires Node.js for Satori/resvg templates. Shares og-image-generator infrastructure; install both for full OG + Twitter pipeline. AI generation requires external image API access.
 metadata:
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # Twitter Card Image Generator
@@ -132,7 +132,7 @@ export const metadata: Metadata = {
 
 ### 3.4 Puppeteer, Managed Services, JSON Config
 
-Same as OG — set viewport/height to 675 instead of 630. See **og-image-generator** §1.4–1.6.
+Same as OG — set viewport/height to 675 instead of 630. See **og-image-generator** §1.4–1.6. For the v3 page priority system (S/A/B/C) and pipeline selection, see [content-strategy.md](../og-image-generator/references/content-strategy.md) and [pipeline-guide.md](../og-image-generator/references/pipeline-guide.md).
 
 ## 4. X-Specific Design Considerations
 
@@ -173,18 +173,30 @@ The poster image is shown before the user taps play. Design it as a compelling t
 
 For AI-generated posters: prompt for "video thumbnail with centered play button, title text in upper third, dark background, 1200x675px."
 
-## 6. Style System (shared with OG)
+## 6. Style System (shared with OG — 16 styles)
 
-Twitter images use the same six visual styles from **og-image-generator** §3 and [references/style-system.md](../og-image-generator/references/style-system.md). The Satori seed templates at `../og-image-generator/templates/` work for Twitter — just change the canvas height to 675px:
+Twitter images use the same 16 visual styles from **og-image-generator** §3 and [references/style-system-v3.md](../og-image-generator/references/style-system-v3.md). All templates work for Twitter — just change the canvas height to 675px.
 
-| # | Style | Dark mode friendly? | Template |
-|---|-------|--------------------|----------|
-| 1 | Terminal / CLI | Always dark | [templates/terminal.tsx](../og-image-generator/templates/terminal.tsx) |
-| 2 | Magazine Editorial | With Midnight Ink preset | [templates/magazine.tsx](../og-image-generator/templates/magazine.tsx) |
-| 3 | Swiss Minimal | Needs dark variant | [templates/swiss.tsx](../og-image-generator/templates/swiss.tsx) |
-| 4 | Pixel Retro | All presets dark | [templates/pixel.tsx](../og-image-generator/templates/pixel.tsx) |
-| 5 | Brutalist | Black bg variant | [templates/brutalist.tsx](../og-image-generator/templates/brutalist.tsx) |
-| 6 | Newspaper | Needs dark variant | [templates/newspaper.tsx](../og-image-generator/templates/newspaper.tsx) |
+| # | Style | Dark Mode | X CTR Potential | Template |
+|---|-------|-----------|----------------|----------|
+| 1 | Terminal / CLI | Always dark | ★★★★★ | [terminal.tsx](../og-image-generator/templates/terminal.tsx) |
+| 2 | Magazine Editorial | Midnight Ink | ★★★ | [magazine.tsx](../og-image-generator/templates/magazine.tsx) |
+| 3 | Swiss Minimal | Needs variant | ★★ | [swiss.tsx](../og-image-generator/templates/swiss.tsx) |
+| 4 | Pixel Retro | All dark | ★★★★ | [pixel.tsx](../og-image-generator/templates/pixel.tsx) |
+| 5 | Brutalist | Black bg | ★★★★★ | [brutalist.tsx](../og-image-generator/templates/brutalist.tsx) |
+| 6 | Newspaper | Needs variant | ★★★ | [newspaper.tsx](../og-image-generator/templates/newspaper.tsx) |
+| 7 | Neo-Brutalism | Yes | ★★★★★ | [neo-brutalism.tsx](../og-image-generator/templates/neo-brutalism.tsx) |
+| 8 | Bento Grid | Dark base | ★★★★ | [bento-grid.tsx](../og-image-generator/templates/bento-grid.tsx) |
+| 9 | Neo-Swiss Gradient | Light | ★★ | [neo-swiss-gradient.tsx](../og-image-generator/templates/neo-swiss-gradient.tsx) |
+| 10 | Dark Gradient+Texture | Always dark | ★★★★★ | [dark-gradient-texture.tsx](../og-image-generator/templates/dark-gradient-texture.tsx) |
+| 11 | Text Overlay | Depends on bg | ★★★★ | [text-overlay-hybrid.tsx](../og-image-generator/templates/text-overlay-hybrid.tsx) |
+| 12 | Cinematic | Dark-friendly | ★★★ | [cinematic.tsx](../og-image-generator/templates/cinematic.tsx) |
+| 13 | Collage | Varies | ★★★★ | [collage.tsx](../og-image-generator/templates/collage.tsx) |
+| 14 | Risograph | Paper base | ★★★ | [risograph.tsx](../og-image-generator/templates/risograph.tsx) |
+| 15 | Vaporwave | Dark neon | ★★★★★ | [vaporwave.tsx](../og-image-generator/templates/vaporwave.tsx) |
+| 16 | Grunge | Faded dark | ★★★★ | [grunge.tsx](../og-image-generator/templates/grunge.tsx) |
+
+**X top performers**: Terminal, Brutalist, Neo-Brutalism, Dark Gradient, Vaporwave — high contrast + dark background are optimal for X timeline. **X avoid**: overly corporate on-brand styles without dark variant; pure-white backgrounds in dark mode timeline.
 
 ## 7. Font & Typography
 

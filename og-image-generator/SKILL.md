@@ -1,10 +1,10 @@
 ---
 name: og-image-generator
-description: Generate Open Graph images for social sharing previews across Facebook, LinkedIn, Slack, Discord, WhatsApp, Telegram, Pinterest, iMessage, and QQ. Use when the user mentions "OG image," "og:image," "Open Graph image," "social share image," "link preview image," "generate OG image," "dynamic og image," "social card image," "programmatic og," or "auto-generate social images." Core approaches: AI image generation (Nano Banana, GPT Image, Flux), Agent-native content-aware workflow, Satori+resvg, Puppeteer. Covers 6 visual styles: Terminal/CLI, Magazine Editorial, Swiss Minimal, Pixel Retro, Brutalist, Newspaper. For Twitter-specific image generation, use twitter-card-image-generator.
+description: Generate Open Graph images for social sharing previews across Facebook, LinkedIn, Slack, Discord, WhatsApp, Telegram, Pinterest, iMessage, and QQ. Use when the user mentions "OG image," "og:image," "Open Graph image," "social share image," "link preview image," "generate OG image," "dynamic og image," "social card image," "programmatic og," or "auto-generate social images." Core approaches: AI image generation (Nano Banana, GPT Image, Flux), Agent-native content-aware workflow with page priority (S/A/B/C), Satori+resvg pipeline, Puppeteer. Supports dual pipeline (Satori for layout styles, AI for texture styles, Hybrid for best quality). Covers 16 visual styles across 10 layout-type (Satori-native) and 6 texture-type (AI/hybrid). For Twitter-specific image generation, use twitter-card-image-generator.
 license: MIT
-compatibility: Requires Node.js for Satori/resvg templates. Next.js, Nuxt, or Cloudflare Workers recommended for code-based generation. AI generation requires external image API access.
+compatibility: Requires Node.js for Satori/resvg templates. Next.js, Nuxt, or Cloudflare Workers recommended for code-based generation. AI generation requires external image API access. Hybrid pipeline requires both.
 metadata:
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # OG Image Generator
@@ -65,68 +65,93 @@ A dark navy gradient background with subtle grid lines. A bold white title reads
 
 **The hybrid approach (recommended)**: AI generates the background/atmosphere; code-based rendering (Satori, §1.3) overlays the text. This gives you AI's visual quality + code's text precision. Especially important for Chinese text where AI models still struggle.
 
-### 1.2 Agent-Native Content-Aware Workflow (Core #2)
+### 1.2 Agent-Native Content-Aware Workflow v3 (Core #2)
 
-This is not a rendering technology — it's a **decision-making workflow** where the Agent reads the page content, extracts what makes it unique, matches a visual style, and drives the generation process end-to-end.
+This is not a rendering technology — it's a **9-step decision-making workflow**. The Agent classifies the page, determines priority (S/A/B/C), matches style using a 3D matrix, selects the right pipeline, and drives generation end-to-end.
 
-Traditional OG generation is: human writes template → template gets filled with a title → renders. Agent-native is: Agent reads the article → Agent understands what this page is actually about → Agent decides how to visually express that → Agent picks a generation method and executes.
-
-**The workflow**:
+**PHASE 1 — Classify & Decide (NEW in v3)**
 
 ```
-1. READ CONTENT
-   Read the page's content. Extract:
-   - Page title and subtitle
-   - The ONE most interesting data point or insight (not the title — the thing
-     that makes THIS page different from all others)
-   - Emotional tone (technical/dry, narrative/warm, data-heavy, playful, urgent)
-   - Visual candidates: product names, numbers, comparisons, quotes, categories, dates
+1. CLASSIFY THE PAGE
+   → Determine page type from URL pattern + content signals:
+     /blog/*, /post/* → blog_post
+     /pricing → pricing
+     /docs/* → docs
+     (Full taxonomy: references/content-strategy.md — 100+ types in 13 categories)
+   
+   → Detect site type:
+     Has pricing/feature/SaaS → SaaS
+     Has product grid/cart → eCommerce
+     Has byline/reading time → Content/Media
+     (Full taxonomy: references/content-strategy.md — 35 types)
 
-2. MATCH STYLE
-   Map tone + content type to one of the 6 visual styles (see §3 Style System):
-   - Technical comparison, data-heavy → Swiss Minimal or Terminal/CLI
-   - Long-form narrative, brand story → Magazine Editorial
-   - Game, retro topic → Pixel Retro
-   - Dev tool, CLI product → Terminal/CLI
-   - Design-forward, anti-convention → Brutalist
-   - News, aggregation, timeliness → Newspaper
+2. DETERMINE PRIORITY (NEW)
+   → Query content-strategy.md S/A/B/C table:
+     S (Must-do): blog_post, changelog, research_report, campaign_landing...
+     A (High): homepage, pricing, feature_page, comparison, event_page...
+     B (Medium): about, docs, author_page, category, integration...
+     C (Skip): login, cart, checkout, dashboard, privacy, terms, 404, contact...
+   
+   → IF C-level: STOP. Report "This page type rarely gets shared. Use one brand-default
+     1200×630 image instead. Proceed anyway? [y/N]"
+   → IF B-level: If >5 B pages → template batch strategy. If ≤5 → treat as A.
+   → IF A/S-level: Continue to full workflow.
 
-3. EXTRACT VISUAL ELEMENTS
-   Identify what can become a visual anchor besides the title:
-   - A stat: "4.2x faster" → large number treatment
-   - A comparison: "Midjourney vs Flux" → side-by-side module
-   - A quote: pull quote block
-   - A category: badge or label
-   - An author + date: byline treatment
-
-4. SELECT GENERATION APPROACH
-   - If visual mood is the priority and exact text is secondary
-     → AI generation (§1.1), or AI background + Satori text overlay
-   - If text precision is critical
-     → Satori (§1.3) with chosen style template
-   - If complex CSS layout needed
-     → Puppeteer (§1.4)
-   - If non-developer maintains this
-     → Managed service (§1.5) or JSON config (§1.6)
-
-5. GENERATE
-   Execute the chosen approach. If using Satori, copy the seed template
-   for the chosen style from templates/, modify with actual data.
-
-6. VALIDATE
-   Run the Agent YAML checks (§9) — dimensions, text legibility, safe zones,
-   font loading, text accuracy (especially for AI-generated images).
+3. EXTRACT CONTENT WITH CONTEXT (enhanced)
+   → Extract: title (1-2 lines), subtitle, THE ONE most interesting data point,
+     date, author, category tags, hero image URL, brand colors, content tone
+     (technical/narrative/data_heavy/playful/urgent/premium/raw)
+   → Output: ContentProfile { title, subtitle, dataPoint, meta, visualCandidates, tone }
 ```
 
-**Example — how Agent-native changes the output**:
+**PHASE 2 — Match Style & Build Recipe (enhanced)**
 
-Content: "We tested 6 AI image generators. Flux scored highest on visual quality (9.2/10). Midjourney won on aesthetic (9.5/10). DALL-E 3 is best for text rendering. GPT Image 2.0 is the most versatile."
+```
+4. MATCH STYLE (3D multi-axis, replacing old tone-only mapping)
+   → Call selectStyle(pageType, siteType, contentTone)
+     Algorithm in references/style-system-v3.md §Style Selection Algorithm
+   → Uses 16×100 page-type matrix + 16×35 site-type matrix
+   → Output: { primary, variants[2-3], avoid[] }
+   
+   Example: SaaS pricing page → Swiss Minimal (score:7), Neo-Swiss Gradient (5), Bento Grid (4)
+            Avoid: Grunge, Vaporwave, Pixel Retro
 
-Template approach (without Agent-native):
-> A card that says "Best AI Image Generators 2026" with "yoursite.com" at the bottom.
+5. BUILD VISUAL RECIPE (NEW)
+   → For the selected (style, pageType) combo, query style-system-v3.md:
+     - Required elements (must_include)
+     - Recommended elements (adds value)
+     - Forbidden patterns (style-breaking)
+     - Layout wireframe (ASCII)
+     - Color preset
+     - Font config
+     - Agent check checklist
+   → Output: VisualRecipe
 
-Agent-native approach (what this skill produces):
-> A Swiss Minimal card with: "Best AI Image Generators" as the headline, a 3-column score matrix showing Flux 9.2 / Midjourney 9.5 / DALL-E 8.7, a small "GPT Image 2.0 — most versatile" badge, and the domain bottom-right. The unique data points from the article ARE the visual.
+6. SELECT PIPELINE (NEW — dual pipeline decision)
+   → Satori pipeline (layout styles #1-10): zero cost, instant, text-perfect
+   → AI pipeline (texture styles #11-16): ~$0.067/img, 5-15s, visual quality
+   → Hybrid (AI bg + Satori text): best quality + perfect text accuracy
+   → Decision tree: references/pipeline-guide.md
+```
+
+**PHASE 3 — Generate & Validate**
+
+```
+7. GENERATE
+   → If Satori: copy seed template from templates/{style}.tsx, fill with ContentProfile
+   → If AI: build prompt from VisualRecipe.aiPromptTemplate, call AI model
+   → If Hybrid: AI generates background → Satori overlays text from ContentProfile
+
+8. VALIDATE (enhanced)
+   → Run pre_flight checks (§9): page classification, priority, pipeline choice
+   → Run style-specific checks from VisualRecipe.agentChecks
+   → Run standard Agent YAML checks (§9)
+
+9. SUGGEST NEXT ACTIONS (NEW)
+   → If ≥2 variants generated: "These styles differ enough for A/B testing"
+   → If S-level page: "Consider regenerating when content updates"
+   → Deployment path: WordPress(Featured Image), Next.js(opengraph-image.png), etc.
+```
 
 ### 1.3 Satori + resvg (Code-based generation)
 
@@ -225,6 +250,43 @@ Define OG images as JSON. `@zyrab/domo-og` is the leading library — WASM-power
 
 **When to use**: OG config lives in a CMS, non-developers maintain, simple text-only templates.
 
+### 1.7 Page Priority Decision (NEW in v3)
+
+The FIRST question is not "what style?" but "**should I generate at all?**"
+
+**Decision flow**:
+```
+Classify page type (100+ types, see content-strategy.md §2)
+  → S-level: blog_post, changelog, research_report, campaign_landing, newsletter_issue...
+  → A-level: homepage, pricing, feature_page, comparison, event_page, product_detail, waitlist...
+  → B-level: about, docs, author_page, category, integration, template, tutorial, podcast...
+  → C-level: login, signup, cart, checkout, dashboard, billing, privacy, terms, 404, contact...
+
+IF C-level → STOP. Suggest one brand-default 1200×630 image for entire site.
+IF B-level AND site has >5 B pages → recommend template batch strategy.
+IF A/S-level → proceed with full content-aware workflow (§1.2).
+```
+
+**Platform built-in OG check**: Before generating, verify the user's platform doesn't already auto-generate adequate OG images. Platforms with built-in OG: Vercel, Next.js (ImageResponse), WordPress (Jetpack), Ghost, Substack, Medium, GitHub, Framer, Webflow, Notion, Dev.to, Hashnode. If the platform's built-in OG is good enough → skip. If not → generate.
+
+**Site-type priority modifier**: Content/Media, News, DevTool, Personal/Portfolio sites → boost all B-level pages to A (their traffic relies on social sharing). Healthcare, Government, FinTech → suppress aggressive styles.
+
+See **[references/content-strategy.md](references/content-strategy.md)** for the full priority framework.
+
+### 1.8 Pipeline Selection (NEW in v3)
+
+Two rendering pipelines, chosen based on the selected style:
+
+| Pipeline | Styles | Speed | Cost | Text Accuracy | Best For |
+|----------|--------|-------|------|---------------|----------|
+| **Satori** | #1-10 (layout styles) | 100-500ms | $0 | 100% perfect | Swiss, Terminal, Brutalist, Neo-Brutalism, Bento, Newspaper... |
+| **AI** | #11-16 (texture styles) | 5-15s | ~$0.067/img | ~80-95% | Text Overlay, Cinematic, Collage, Risograph, Vaporwave, Grunge |
+| **Hybrid** | #11-16 recommended | 5-15s | ~$0.067/img | 100% perfect | AI generates background/texture → Satori overlays pixel-perfect text |
+
+**Decision rule**: See **[references/pipeline-guide.md](references/pipeline-guide.md)** for the complete decision tree, AI prompt templates per style, and hybrid implementation patterns.
+
+**Hybrid is the default recommendation** for all texture styles (#11-16) when CJK text or product names must be exact. AI generates the atmosphere/photo/texture; Satori renders the text — combining AI's visual quality with code's text precision.
+
 ## 2. Typography
 
 See **[references/typography.md](references/typography.md)** for the complete OG image typography guide: font philosophy, pairing formulas, type scale (Perfect Fourth 1.333), weight assignments, CJK-specific rules, and line-length constraints.
@@ -237,31 +299,65 @@ Key constraints enforced across all styles:
 - Chinese titles: ≤20 characters per line
 - English titles: ≤15 words per line
 
-## 3. Style System — 6 Visual Styles
+## 3. Style System — 20 Visual Styles
 
-See **[references/style-system.md](references/style-system.md)** for the complete design system. Each style defines font rules, color presets, layout recipes, and anti-patterns. Styles are visual stances, not content categories — pick by the feeling you want, not by topic.
+See **[references/style-system-v3.md](references/style-system-v3.md)** for the complete design system with 20 styles, pipeline compatibility, style×page-type matrix (20×100), and style×site-type matrix (20×35). The legacy [references/style-system.md](references/style-system.md) is retained for reference on original 6 styles.
 
-| # | Style | Seed template | Tone | Signature look |
-|---|-------|--------------|------|----------------|
-| 1 | **Terminal / CLI** | [templates/terminal.tsx](templates/terminal.tsx) | Technical, hacker, dev-tool | `$>` prompts, monospace, green-on-black, scanlines |
-| 2 | **Magazine Editorial** | [templates/magazine.tsx](templates/magazine.tsx) | Slow, considered, narrative | Serif display, paper tones, large photo well, pull quotes |
-| 3 | **Swiss Minimal** | [templates/swiss.tsx](templates/swiss.tsx) | Engineered, quantified, decisive | Inter light display, single accent, hairline rules, left grid |
-| 4 | **Pixel Retro** | [templates/pixel.tsx](templates/pixel.tsx) | Playful, nostalgic, indie | Pixel fonts (Press Start 2P), 8-bit palette, chunky borders |
-| 5 | **Brutalist** | [templates/brutalist.tsx](templates/brutalist.tsx) | Raw, anti-convention, bold | B&W, max-bold type, no rounded corners, "unfinished" |
-| 6 | **Newspaper** | [templates/newspaper.tsx](templates/newspaper.tsx) | Authoritative, timely, dense | Multi-column, serif titles, uppercase labels, dateline |
+### Layout-Type Styles (Satori-Native, #1-10)
 
-**Style selection** (used by Agent-Native workflow §1.2):
+Zero-cost, instant rendering, 100% text accuracy.
 
-```
-Content tone → Style
+| # | Style | Template | Pipeline | Signature |
+|---|-------|----------|----------|-----------|
+| 1 | **Terminal / CLI** | [terminal.tsx](templates/terminal.tsx) | Satori | `$>` prompts, monospace, green-on-black |
+| 2 | **Magazine Editorial** | [magazine.tsx](templates/magazine.tsx) | Satori | Serif display, paper tones, pull quotes |
+| 3 | **Swiss Minimal** | [swiss.tsx](templates/swiss.tsx) | Satori | Inter light, single accent, left grid |
+| 4 | **Pixel Retro** | [pixel.tsx](templates/pixel.tsx) | Satori | Press Start 2P, 8-bit palette, HUD |
+| 5 | **Brutalist** | [brutalist.tsx](templates/brutalist.tsx) | Satori | B&W, max-bold, zero radius |
+| 6 | **Newspaper** | [newspaper.tsx](templates/newspaper.tsx) | Satori | Multi-column, serif titles, dateline |
+| 7 | **Neo-Brutalism** | [neo-brutalism.tsx](templates/neo-brutalism.tsx) | Satori | Clash colors, 6px borders, hard shadow |
+| 8 | **Bento Grid** | [bento-grid.tsx](templates/bento-grid.tsx) | Satori | Asymmetric cards, dark glow, 14px radius |
+| 9 | **Neo-Swiss Gradient** | [neo-swiss-gradient.tsx](templates/neo-swiss-gradient.tsx) | Satori | Warm gradient, Inter 200, hairline rules |
+| 10 | **Dark Gradient+Texture** | [dark-gradient-texture.tsx](templates/dark-gradient-texture.tsx) | Satori | Radial glow, dot-grid, glowing line |
 
-Technical, data-rich, comparison → Swiss Minimal or Terminal/CLI
-Narrative, brand story, long-form → Magazine Editorial
-Dev tool, CLI, API docs           → Terminal/CLI
-Game, retro, community            → Pixel Retro
-Design-forward, anti-convention   → Brutalist
-News, aggregation, time-sensitive → Newspaper
-```
+### Texture-Type Styles (AI/Hybrid, #11-16)
+
+Require AI for full effect. Hybrid (AI bg + Satori text) recommended for text accuracy.
+
+| # | Style | Template | Pipeline | Signature |
+|---|-------|----------|----------|-----------|
+| 11 | **Text Overlay** | [text-overlay-hybrid.tsx](templates/text-overlay-hybrid.tsx) | Hybrid | Photo bg + dark mask + bold white title |
+| 12 | **Cinematic** | [cinematic.tsx](templates/cinematic.tsx) | AI+Hybrid | Film grading, bokeh, grain, lower-third title |
+| 13 | **Collage** | [collage.tsx](templates/collage.tsx) | AI+Hybrid | Torn edges, tape, polaroids, layered panels |
+| 14 | **Risograph** | [risograph.tsx](templates/risograph.tsx) | AI+Hybrid | 2-3 colors, halftone dots, ink offset |
+| 15 | **Vaporwave** | [vaporwave.tsx](templates/vaporwave.tsx) | AI+Hybrid | Neon sunset, statues, CRT scanlines, glitch |
+| 16 | **Grunge** | [grunge.tsx](templates/grunge.tsx) | AI-Native | Noise grain, photocopy texture, distressed |
+
+### AI-Native Styles (#17-20 — Pure AI, No Satori)
+
+These styles are **AI-only**: the model generates the complete image with text built in. No Satori template, no Hybrid step. One prompt, one image.
+
+| # | Style | Template | Pipeline | Signature |
+|---|-------|----------|----------|-----------|
+| 17 | **AI Painterly** | [ai-painterly.tsx](templates/ai-painterly.tsx) | AI-Native | Watercolor/oil/ink — text is painted, not typeset |
+| 18 | **Abstract Gradient** | [abstract-gradient.tsx](templates/abstract-gradient.tsx) | AI-Native | Zero text. Pure color field. Rothko-esque |
+| 19 | **AI Sticker/Badge** | [ai-sticker.tsx](templates/ai-sticker.tsx) | AI-Native | 1-3 word badge floating on atmospheric bg |
+| 20 | **AI Infographic** | [ai-infographic.tsx](templates/ai-infographic.tsx) | AI-Native | Editorial data art — visual comparisons, not precise charts |
+
+**Style selection** (used by Agent-Native workflow §1.2 step 4):
+
+The Agent now uses a 3D matrix (page_type × site_type × content_tone) instead of simple tone-only mapping. The full algorithm is in [references/style-system-v3.md](references/style-system-v3.md) §Style Selection Algorithm. Quick reference:
+
+| Content Tone | Top 3 Styles |
+|-------------|-------------|
+| Technical, data-heavy | Swiss, Dark Gradient, Terminal |
+| Narrative, brand story | Magazine, Cinematic, Neo-Swiss Gradient |
+| Dev tool, CLI, API | Terminal, Dark Gradient, Neo-Brutalism |
+| Design-forward, bold | Neo-Brutalism, Brutalist, Collage |
+| News, timely, dense | Newspaper, Text Overlay, Bento Grid |
+| Playful, retro, indie | Pixel, Vaporwave, Collage |
+| Premium, refined | Cinematic, Neo-Swiss Gradient, Magazine |
+| Raw, anti-convention | Grunge, Risograph, Brutalist |
 
 ## 4. Font Handling
 
@@ -323,6 +419,20 @@ images: [
 ## 9. Agent YAML Checks
 
 ```yaml
+pre_flight:  # NEW in v3 — run before generation
+  - id: page-classification
+    description: Page type identified from URL pattern + content signals (content-strategy.md §2)
+  - id: priority-determination
+    description: S/A/B/C level assigned. C-level pages should NOT use custom generation.
+  - id: site-type-detection
+    description: Site type inferred from content, title patterns, and business signals
+  - id: c-level-gate
+    description: If C-level, agent has warned user and confirmed before proceeding
+  - id: platform-built-in-check
+    description: Verified user's platform does not already auto-generate adequate OG images
+  - id: pipeline-choice
+    description: Correct pipeline selected (Satori for #1-10, Hybrid for #11-16)
+
 checks:
   # P0 — must pass
   - id: dimensions
@@ -340,17 +450,21 @@ checks:
   - id: content-aware
     description: Image reflects page-specific content, not just a title in a template
   - id: style-consistency
-    description: All visual elements follow the chosen style's rules
+    description: All visual elements follow the chosen style's rules (see style-system-v3.md per-style agent checks)
   - id: text-accuracy
     description: All text matches the source — no hallucinated or misspelled text
   - id: ai-hybrid-validation
     description: If using AI generation, text was validated; critical text uses hybrid approach
+  - id: pipeline-appropriate
+    description: Generated image quality matches pipeline expectations (Satori=sharp text, AI=visual richness, Hybrid=both)
 
   # P2 — nice to have
   - id: unique-per-page
     description: Each page has a unique OG image (not site-wide identical)
   - id: dark-mode-friendly
     description: Template has a dark background variant (better on X/Twitter)
+  - id: ab-test-ready
+    description: If ≥2 style variants generated, styles differ enough for meaningful A/B testing
 ```
 
 ## 10. Related Skills
