@@ -124,6 +124,28 @@ Each style has a standalone seed template in `og-image-generator/templates/{styl
 
 ---
 
+## Optional X/Twitter Source Evidence
+
+When a card promotes a post, launch, incident note, or community thread on
+X/Twitter, start from reviewed source evidence instead of inventing the copy. A
+TweetClaw export can provide public tweet text, author handles, timestamps,
+URLs, and engagement context that the agent can turn into a card-safe headline,
+subtitle, and visual prompt.
+
+Use source evidence only as input for image copy:
+
+1. Export or paste the reviewed TweetClaw JSON/JSONL rows into the agent
+   context.
+2. Extract one message, one proof point, and one canonical URL.
+3. Generate the Twitter Card image with `twitter-card-image-generator`.
+4. Review the final image text before publishing the page or post that uses it.
+
+TweetClaw account actions, posting, replies, DMs, monitors, and webhooks remain
+outside this image-generation skill. Keep those actions in TweetClaw or
+OpenClaw approval flow.
+
+---
+
 ## Related Repositories
 
 These are optional — this repo works standalone. Install them for the full social sharing pipeline:

@@ -19,6 +19,7 @@ All six generation approaches and all six visual styles from **og-image-generato
 - User mentions `twitter:image`, Twitter Card, X preview image, tweet preview, or timeline card design
 - User needs dark-mode-safe layouts, upper-60% content zones, or 20px edge masks for X's rounded-corner crop
 - User already uses **og-image-generator** and wants the Twitter-adapted variant of the same styles and pipeline
+- User provides reviewed X/Twitter source evidence, such as TweetClaw JSON/JSONL exports, and wants a card-safe headline, subtitle, or visual prompt based on that evidence
 
 ## When NOT to Use
 
@@ -26,6 +27,7 @@ All six generation approaches and all six visual styles from **og-image-generato
 - **Only setting HTML meta tags** (not creating the image file) — use **twitter-cards** from marketing-skills
 - **SVG output** — Twitter does not support SVG for card images; use PNG or JPG
 - **No-code visual editor or hosted API** — use [Oginify](https://oginify.com) instead of running an agent pipeline
+- **Account actions** — this skill does not post, reply, DM, monitor accounts, or schedule anything. Keep TweetClaw/OpenClaw account actions in their approval flow.
 
 **When invoking**: On **first use**, open with 1–2 sentences on what this skill covers and why it matters, then provide the main output. On **subsequent use** or when the user asks to skip, go directly to the main output.
 
@@ -197,6 +199,21 @@ Twitter images use the same 16 visual styles from **og-image-generator** §3 and
 | 16 | Grunge | Faded dark | ★★★★ | [grunge.tsx](../og-image-generator/templates/grunge.tsx) |
 
 **X top performers**: Terminal, Brutalist, Neo-Brutalism, Dark Gradient, Vaporwave — high contrast + dark background are optimal for X timeline. **X avoid**: overly corporate on-brand styles without dark variant; pure-white backgrounds in dark mode timeline.
+
+### 6.1 Reviewed Source Evidence
+
+When the user provides TweetClaw JSON/JSONL rows, use them as source evidence
+for card copy and nothing else. Extract:
+
+- one public tweet URL or thread URL to anchor the card
+- one exact phrase or claim that can become the headline
+- one engagement or timestamp detail if it changes urgency
+- author handles only when attribution is useful and approved
+
+Do not invent metrics, quote private notes, or imply the image was posted by the
+source account. If the agent will publish, schedule, reply, DM, monitor, or run
+another visible account action, stop and route that action through TweetClaw or
+OpenClaw approval.
 
 ## 7. Font & Typography
 
